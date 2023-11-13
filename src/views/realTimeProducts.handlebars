@@ -1,0 +1,53 @@
+<h2>Products list</h2>
+<ul id="product-list">
+    {{#each products}}
+    <li>
+        {{name}}
+    </li>
+    {{/each}}
+</ul>
+
+<h2>Add product</h2>
+<form id="product-form">
+    <label for="product-name">Product name:</label>
+    <input type="text" id="product-name" name="product-name" placeholder="Product name">
+    <button type="submit">Add producto</button>
+</form>
+
+<h2>Remove product</h2>
+<form id="remove-form">
+    <label for="product-id">ID of the product to be removed:</label>
+    <input type="text" id="product-id" name="product-id" placeholder="Product ID">
+    <button type="button" onclick="removeProduct()">Eliminar Producto</button>
+</form>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    //Logica para actualizar la lista de productos.
+    socket.on('updateProductList', (products) => {
+        const productList = document.getElementById('product-list');
+        productList.innerHTML = '';
+
+        products.forEach((product) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = product.name;
+            productList.appendChild(listItem);
+        });
+    });
+
+    //Funcion para remover producto. Obtiene el id y luego lo emite.
+    const removeProduct = () => {
+        const productId = document.getElementById('product-id').value;;
+        socket.emit('deleteProduct', productId);
+    };
+
+    //Logica para emitir el producto a añadir, posteriormente ingresado en el form.
+    document.getElementById('product-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const productName = document.getElementById('product-name').value;
+
+        socket.emit('addProduct', { name: productName });
+    });
+</script>
